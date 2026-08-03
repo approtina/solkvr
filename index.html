@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solvr — Todo problema tem um preço. Toda solução, uma recompensa.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0E14;
+    --ink-soft:#141924;
+    --ink-line:rgba(255,255,255,0.09);
+    --paper:#F5F3EC;
+    --paper-line:rgba(11,14,20,0.10);
+    --gold:#F5B400;
+    --gold-dim:#8a6a12;
+    --teal:#17A398;
+    --slate:#93A0B4;
+    --ink-text:#0B0E14;
+    --paper-muted:#5C6270;
+    --radius:2px;
+    --max:1180px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper);
+    color:var(--ink-text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img,svg{display:block; max-width:100%;}
+  a{color:inherit; text-decoration:none;}
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .wrap{max-width:var(--max); margin:0 auto; padding:0 28px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    font-weight:500;
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px;
+    background:var(--gold);
+    display:inline-block;
+    border-radius:1px;
+  }
+  h1,h2,h3{
+    font-family:'Archivo Black', sans-serif;
+    font-weight:400;
+    line-height:1.05;
+    letter-spacing:-0.01em;
+  }
+  section{position:relative;}
+  .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(11,14,20,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--ink-line);
+  }
+  nav .wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:68px;
+  }
+  .logo{
+    font-family:'Archivo Black', sans-serif;
+    color:var(--paper);
+    font-size:22px;
+    letter-spacing:-0.02em;
+    display:flex; align-items:center; gap:8px;
+  }
+  .logo::after{
+    content:"";
+    width:8px; height:8px;
+    background:var(--gold);
+    display:inline-block;
+    margin-top:-14px;
+  }
+  .nav-links{display:flex; gap:32px; align-items:center;}
+  .nav-links a{
+    color:var(--slate); font-size:14px; font-weight:500;
+    transition:color .2s;
+  }
+  .nav-links a:hover{color:var(--paper);}
+  .btn-nav{
+    background:var(--gold); color:var(--ink) !important;
+    padding:10px 20px; font-weight:700; font-size:13.5px;
+    border-radius:var(--radius);
+  }
+  .nav-toggle{display:none;}
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    background:var(--ink);
+    color:var(--paper);
+    padding:88px 0 0;
+    position:relative;
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size:56px 56px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 20%, black 40%, transparent 100%);
+    pointer-events:none;
+  }
+  .hero-inner{position:relative; z-index:2; text-align:center; padding-bottom:70px;}
+  .hero .eyebrow{color:var(--gold); justify-content:center; margin-bottom:26px;}
+  .hero h1{
+    font-size:clamp(38px, 6.4vw, 84px);
+    max-width:920px;
+    margin:0 auto 26px;
+  }
+  .hero h1 span{color:var(--gold);}
+  .hero p.sub{
+    max-width:560px; margin:0 auto 40px;
+    color:var(--slate); font-size:17.5px; line-height:1.6;
+  }
+  .cta-row{display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:18px;}
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:16px 30px;
+    font-weight:700; font-size:15px;
+    border-radius:var(--radius);
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .btn:hover{transform:translateY(-2px);}
+  .btn-gold{background:var(--gold); color:var(--ink);}
+  .btn-gold:hover{box-shadow:0 10px 26px rgba(245,180,0,0.25);}
+  .btn-outline{background:transparent; color:var(--paper); border-color:rgba(255,255,255,0.25);}
+  .btn-outline:hover{border-color:var(--paper);}
+  .hero-note{color:var(--slate); font-size:12.5px; font-family:'IBM Plex Mono', monospace;}
+
+  /* ---------- TICKER ---------- */
+  .ticker-wrap{
+    border-top:1px solid var(--ink-line);
+    background:var(--ink-soft);
+    overflow:hidden;
+    position:relative;
+    z-index:2;
+  }
+  .ticker-wrap::before, .ticker-wrap::after{
+    content:""; position:absolute; top:0; bottom:0; width:80px; z-index:3;
+  }
+  .ticker-wrap::before{left:0; background:linear-gradient(90deg, var(--ink-soft), transparent);}
+  .ticker-wrap::after{right:0; background:linear-gradient(-90deg, var(--ink-soft), transparent);}
+  .ticker-track{
+    display:flex; gap:0; width:max-content;
+    animation:scroll-left 42s linear infinite;
+  }
+  @keyframes scroll-left{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}
+  }
+  .ticket{
+    display:flex; align-items:center; gap:14px;
+    padding:16px 26px;
+    border-right:1px dashed var(--ink-line);
+    white-space:nowrap;
+    font-size:13.5px;
+  }
+  .ticket .tag{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; letter-spacing:0.08em;
+    color:var(--gold); border:1px solid var(--gold-dim);
+    padding:3px 7px; border-radius:2px;
+  }
+  .ticket .title{color:var(--paper); font-weight:500;}
+  .ticket .val{font-family:'IBM Plex Mono', monospace; color:var(--teal); font-weight:600;}
+  .ticket .status{color:var(--slate); font-family:'IBM Plex Mono', monospace; font-size:11.5px;}
+
+  /* ---------- SECTION HEADERS ---------- */
+  .sec-head{max-width:640px; margin-bottom:56px;}
+  .sec-head.center{margin-left:auto; margin-right:auto; text-align:center;}
+  .sec-head h2{font-size:clamp(30px, 4vw, 46px); margin:16px 0 18px;}
+  .sec-head p{font-size:16.5px; line-height:1.65; color:var(--paper-muted);}
+  section.dark .sec-head p{color:var(--slate);}
+  section.dark .sec-head .eyebrow{color:var(--gold);}
+  .eyebrow.on-paper{color:var(--gold-dim);}
+
+  /* ---------- PROBLEMA ---------- */
+  .problema{background:var(--paper); padding:120px 0;}
+  .problema-grid{display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center;}
+  .problema-text p{font-size:16.5px; line-height:1.75; color:var(--paper-muted); margin-bottom:18px;}
+  .problema-text strong{color:var(--ink-text);}
+
+  .frag-diagram{
+    background:var(--ink); border-radius:4px; padding:40px;
+    aspect-ratio:1/0.9; position:relative;
+  }
+  .frag-diagram svg{width:100%; height:100%;}
+
+  /* ---------- COMO FUNCIONA ---------- */
+  .how{background:var(--ink); color:var(--paper); padding:130px 0;}
+  .how-grid{
+    display:grid; grid-template-columns:repeat(5, 1fr); gap:0;
+    border-top:1px solid var(--ink-line);
+    border-left:1px solid var(--ink-line);
+  }
+  .step{
+    border-right:1px solid var(--ink-line);
+    border-bottom:1px solid var(--ink-line);
+    padding:34px 22px 30px;
+    position:relative;
+    min-height:270px;
+    display:flex; flex-direction:column;
+  }
+  .step .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; color:var(--gold); margin-bottom:34px;
+  }
+  .step h3{
+    font-family:'Inter',sans-serif; font-weight:700; font-size:16.5px;
+    margin-bottom:12px; color:var(--paper);
+  }
+  .step p{font-size:13.8px; line-height:1.6; color:var(--slate); flex:1;}
+  .step::after{
+    content:"";
+    position:absolute; bottom:0; left:22px; right:22px; height:1px;
+  }
+
+  /* ---------- MERCADOS ---------- */
+  .mercados{background:var(--paper); padding:120px 0;}
+  .chip-grid{display:flex; flex-wrap:wrap; gap:14px;}
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+    padding:14px 20px;
+    border:1px solid var(--paper-line);
+    border-radius:3px;
+    background:#fff;
+    display:flex; align-items:center; gap:10px;
+    transition:border-color .2s, transform .2s;
+  }
+  .chip:hover{border-color:var(--gold); transform:translateY(-2px);}
+  .chip .dot{width:6px; height:6px; background:var(--teal); border-radius:50%; flex:none;}
+
+  /* ---------- DUAS PORTAS ---------- */
+  .portas{background:var(--ink); color:var(--paper); padding:130px 0;}
+  .porta-grid{display:grid; grid-template-columns:1fr 1fr; gap:2px; background:var(--ink-line);}
+  .porta{
+    background:var(--ink-soft); padding:52px 44px;
+    display:flex; flex-direction:column;
+  }
+  .porta .eyebrow{color:var(--gold); margin-bottom:22px;}
+  .porta h3{font-size:30px; margin-bottom:16px; font-family:'Archivo Black',sans-serif;}
+  .porta > p{color:var(--slate); font-size:15.5px; line-height:1.6; margin-bottom:30px;}
+  .porta ul{list-style:none; margin-bottom:34px; flex:1;}
+  .porta li{
+    display:flex; gap:12px; padding:12px 0;
+    border-top:1px solid var(--ink-line);
+    font-size:14.5px; color:#D8DDE6;
+  }
+  .porta li:first-child{border-top:none;}
+  .porta li .check{color:var(--teal); font-family:'IBM Plex Mono',monospace; flex:none;}
+  .porta.empresa .check{color:var(--gold);}
+
+  /* ---------- DIFERENCIAL ---------- */
+  .dif{background:var(--paper); padding:120px 0;}
+  .dif-table{
+    border:1px solid var(--paper-line); border-radius:4px; overflow:hidden;
+  }
+  .dif-row{
+    display:grid; grid-template-columns:1fr 1fr;
+  }
+  .dif-row + .dif-row{border-top:1px solid var(--paper-line);}
+  .dif-cell{padding:22px 28px; font-size:15px; line-height:1.55;}
+  .dif-cell.old{color:var(--paper-muted); background:#EFEDE4;}
+  .dif-cell.new{color:var(--ink-text); background:#fff; font-weight:600; position:relative;}
+  .dif-cell.new::before{content:"✓"; color:var(--teal); margin-right:10px; font-weight:700;}
+  .dif-head{display:grid; grid-template-columns:1fr 1fr; margin-bottom:0;}
+  .dif-head div{
+    padding:16px 28px; font-family:'IBM Plex Mono',monospace;
+    font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
+  }
+  .dif-head .old-h{color:var(--paper-muted); background:#E6E3D8;}
+  .dif-head .new-h{color:var(--gold-dim); background:#fff;}
+
+  /* ---------- FINAL CTA ---------- */
+  .final{
+    background:var(--gold); color:var(--ink); padding:110px 0;
+    text-align:center; position:relative; overflow:hidden;
+  }
+  .final::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:linear-gradient(rgba(11,14,20,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(11,14,20,0.06) 1px, transparent 1px);
+    background-size:44px 44px;
+  }
+  .final-inner{position:relative; z-index:2; max-width:640px; margin:0 auto;}
+  .final .eyebrow{color:var(--ink); opacity:0.65; justify-content:center; margin-bottom:20px;}
+  .final .eyebrow::before{background:var(--ink);}
+  .final h2{font-size:clamp(30px,4.6vw,52px); margin-bottom:18px;}
+  .final p{font-size:16px; margin-bottom:36px; color:#3a2e00; opacity:0.85;}
+  .form-row{
+    display:flex; gap:10px; max-width:440px; margin:0 auto 14px;
+    background:var(--ink); padding:6px; border-radius:3px;
+  }
+  .form-row input{
+    flex:1; border:none; background:transparent; padding:14px 16px;
+    color:var(--paper); font-family:'Inter'; font-size:14.5px; outline:none;
+  }
+  .form-row input::placeholder{color:var(--slate);}
+  .form-row button{
+    background:var(--paper); color:var(--ink); border:none;
+    padding:0 24px; font-weight:700; font-size:14px; border-radius:2px; cursor:pointer;
+    transition:background .2s;
+  }
+  .form-row button:hover{background:#fff;}
+  .form-note{font-size:12.5px; font-family:'IBM Plex Mono',monospace; opacity:0.65;}
+  .thanks{display:none; font-family:'IBM Plex Mono',monospace; font-size:14.5px; padding:14px 0;}
+
+  /* ---------- FOOTER ---------- */
+  footer{background:var(--ink); color:var(--slate); padding:52px 0 34px;}
+  footer .wrap{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;}
+  .foot-links{display:flex; gap:26px; font-size:13.5px;}
+  .foot-links a:hover{color:var(--paper);}
+  footer .copy{font-family:'IBM Plex Mono',monospace; font-size:12px;}
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:900px){
+    .problema-grid{grid-template-columns:1fr; gap:40px;}
+    .how-grid{grid-template-columns:repeat(2,1fr);}
+    .porta-grid{grid-template-columns:1fr;}
+    .dif-row, .dif-head{grid-template-columns:1fr;}
+    .dif-cell.old{display:none;}
+    .dif-head .old-h{display:none;}
+  }
+  @media (max-width:640px){
+    .nav-links{display:none;}
+    .how-grid{grid-template-columns:1fr;}
+    .form-row{flex-direction:column; background:transparent; gap:10px;}
+    .form-row input{background:var(--ink); border-radius:2px;}
+    .form-row button{padding:14px; border-radius:2px;}
+    footer .wrap{flex-direction:column; align-items:flex-start;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ticker-track{animation:none;}
+    .reveal{opacity:1; transform:none; transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">solvr</div>
+    <div class="nav-links">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#mercados">Mercados</a>
+      <a href="#portas">Para você</a>
+      <a href="#diferencial">Diferencial</a>
+      <a href="#cta" class="btn-nav">Entrar na lista</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow">O marketplace global de soluções</div>
+    <h1>Todo problema tem um preço.<br>Toda solução, <span>uma recompensa.</span></h1>
+    <p class="sub">Empresas publicam desafios reais com recompensa em dinheiro. Uma comunidade global de especialistas envia soluções. Você escolhe a melhor — e paga só pelo resultado.</p>
+    <div class="cta-row">
+      <a href="#cta" class="btn btn-gold">Publicar um desafio →</a>
+      <a href="#cta" class="btn btn-outline">Resolver desafios →</a>
+    </div>
+    <div class="hero-note">SEM CONTRATO FIXO · SEM HORAS FATURADAS · SÓ RESULTADO</div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
+</header>
+
+<section class="problema reveal">
+  <div class="wrap problema-grid">
+    <div class="problema-text">
+      <div class="eyebrow on-paper">O problema</div>
+      <h2 style="margin:16px 0 22px; font-size:clamp(28px,3.6vw,40px);">O mercado de soluções está quebrado</h2>
+      <p>Milhões de empresas têm desafios que travam o crescimento — <strong>custos altos, produtos que não saem do papel, marketing que não converte, processos manuais, falta de inovação.</strong></p>
+      <p>Do outro lado, milhões de pessoas talentosas têm exatamente o conhecimento para resolver isso. O problema é a conexão: empresas contratam consultorias caras e assumem o risco <strong>antes</strong> de saber se a solução vai funcionar.</p>
+      <p>O mercado é fragmentado. Buscar especialista, negociar contrato e cruzar os dedos não é estratégia — é aposta.</p>
+    </div>
+    <div class="frag-diagram">
+      <svg viewBox="0 0 400 360" fill="none">
+        <g opacity="0.5" stroke="#8B93A7" stroke-dasharray="3 5">
+          <line x1="70" y1="60" x2="200" y2="180"/>
+          <line x1="330" y1="90" x2="200" y2="180"/>
+          <line x1="60" y1="270" x2="200" y2="180"/>
+          <line x1="320" y1="290" x2="200" y2="180"/>
+        </g>
+        <circle cx="200" cy="180" r="26" fill="#141924" stroke="#F5B400" stroke-width="1.5"/>
+        <text x="200" y="185" text-anchor="middle" fill="#F5B400" font-family="IBM Plex Mono" font-size="10">EMPRESA</text>
+        <g fill="#0B0E14" stroke="#17A398" stroke-width="1.2">
+          <circle cx="70" cy="60" r="16"/>
+          <circle cx="330" cy="90" r="16"/>
+          <circle cx="60" cy="270" r="16"/>
+          <circle cx="320" cy="290" r="16"/>
+        </g>
+        <g fill="#93A0B4" font-family="IBM Plex Mono" font-size="9">
+          <text x="70" y="35" text-anchor="middle">CONSULTOR</text>
+          <text x="330" y="65" text-anchor="middle">FREELANCER</text>
+          <text x="60" y="305" text-anchor="middle">AGÊNCIA</text>
+          <text x="320" y="325" text-anchor="middle">INDICAÇÃO</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="how dark" id="como-funciona">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">A solução</div>
+      <h2>A economia de soluções, em 5 passos</h2>
+      <p>Um processo simples que transforma um desafio empresarial em um leilão global de inteligência.</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="how-grid reveal">
+      <div class="step">
+        <div class="num">01</div>
+        <h3>Publique o desafio</h3>
+        <p>Descreva o problema, defina critérios de avaliação e o valor da recompensa.</p>
+      </div>
+      <div class="step">
+        <div class="num">02</div>
+        <h3>Alcance global</h3>
+        <p>O desafio entra no radar de especialistas, criadores e profissionais de todas as áreas.</p>
+      </div>
+      <div class="step">
+        <div class="num">03</div>
+        <h3>Soluções chegam</h3>
+        <p>Solucionadores enviam propostas, protótipos e estratégias reais — não currículos.</p>
+      </div>
+      <div class="step">
+        <div class="num">04</div>
+        <h3>Você escolhe</h3>
+        <p>Compare por critério, qualidade e reputação. Escolha a melhor solução entregue.</p>
+      </div>
+      <div class="step">
+        <div class="num">05</div>
+        <h3>Recompensa liberada</h3>
+        <p>O vencedor recebe o pagamento. Você paga por resultado, não por promessa.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mercados" id="mercados">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow on-paper">Onde a solvr atua</div>
+      <h2>Um marketplace, todas as áreas do conhecimento</h2>
+      <p>Se existe um desafio, existe alguém em algum lugar do mundo com a solução.</p>
+    </div>
+    <div class="chip-grid reveal">
+      <div class="chip"><span class="dot"></span>Tecnologia &amp; Programação</div>
+      <div class="chip"><span class="dot"></span>Inteligência Artificial</div>
+      <div class="chip"><span class="dot"></span>Marketing &amp; Vendas</div>
+      <div class="chip"><span class="dot"></span>Design</div>
+      <div class="chip"><span class="dot"></span>Engenharia</div>
+      <div class="chip"><span class="dot"></span>Pesquisa &amp; Inovação</div>
+      <div class="chip"><span class="dot"></span>Empreendedorismo</div>
+      <div class="chip"><span class="dot"></span>Processos Empresariais</div>
+    </div>
+  </div>
+</section>
+
+<section class="portas dark" id="portas">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Duas portas de entrada</div>
+      <h2>Feito para quem tem o problema. E para quem tem a solução.</h2>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="porta-grid reveal">
+      <div class="porta empresa">
+        <div class="eyebrow">Para empresas</div>
+        <h3>Acesso rápido à<br>inteligência coletiva</h3>
+        <p>Pare de contratar antes de saber se funciona. Receba várias soluções, compare e pague pela que entregar valor de verdade.</p>
+        <ul>
+          <li><span class="check">→</span> Publique um desafio em minutos</li>
+          <li><span class="check">→</span> Receba propostas de múltiplos especialistas</li>
+          <li><span class="check">→</span> Pague apenas pela solução escolhida</li>
+          <li><span class="check">→</span> Reputação e IA filtrando qualidade</li>
+        </ul>
+        <a href="#cta" class="btn btn-gold">Publicar meu primeiro desafio →</a>
+      </div>
+      <div class="porta solver">
+        <div class="eyebrow">Para solucionadores</div>
+        <h3>Transforme conhecimento<br>em renda real</h3>
+        <p>Sem processo seletivo, sem portfólio engessado. Você resolve, você é recompensado — em qualquer lugar do mundo.</p>
+        <ul>
+          <li><span class="check">→</span> Escolha desafios da sua área de domínio</li>
+          <li><span class="check">→</span> Compita por recompensas em dinheiro</li>
+          <li><span class="check">→</span> Construa reputação a cada solução entregue</li>
+          <li><span class="check">→</span> Sem contrato, sem chefe, sem hora fixa</li>
+        </ul>
+        <a href="#cta" class="btn btn-outline">Começar a resolver →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dif" id="diferencial">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow on-paper">O diferencial</div>
+      <h2>Não vendemos horas. Entregamos resultado.</h2>
+      <p>Diferente de plataformas de freelancer, você não contrata uma pessoa na esperança de que dê certo — você recebe soluções prontas e escolhe a que funciona.</p>
+    </div>
+    <div class="reveal">
+      <div class="dif-head">
+        <div class="old-h">Modelo tradicional</div>
+        <div class="new-h">Com a Solvr</div>
+      </div>
+      <div class="dif-table">
+        <div class="dif-row">
+          <div class="dif-cell old">Contrata antes de saber se vai funcionar</div>
+          <div class="dif-cell new">Recebe soluções prontas antes de pagar</div>
+        </div>
+        <div class="dif-row">
+          <div class="dif-cell old">Um fornecedor, uma única perspectiva</div>
+          <div class="dif-cell new">Dezenas de especialistas competindo pela melhor ideia</div>
+        </div>
+        <div class="dif-row">
+          <div class="dif-cell old">Custo fixo alto, resultado incerto</div>
+          <div class="dif-cell new">Você paga pelo valor entregue, não pela hora</div>
+        </div>
+        <div class="dif-row">
+          <div class="dif-cell old">Semanas para encontrar quem contratar</div>
+          <div class="dif-cell new">Desafio publicado e no ar em minutos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final" id="cta">
+  <div class="wrap final-inner">
+    <div class="eyebrow">Acesso antecipado</div>
+    <h2>Entre para a economia de soluções</h2>
+    <p>Garanta acesso antecipado à Solvr. Avisamos você assim que a plataforma abrir para publicar e resolver desafios.</p>
+    <form class="form-row" id="waitlistForm">
+      <input type="email" required placeholder="seu@email.com">
+      <button type="submit">Quero entrar</button>
+    </form>
+    <div class="thanks" id="thanksMsg">✓ Recebido. Você está na lista — em breve entramos em contato.</div>
+    <div class="form-note">SEM SPAM · CANCELE QUANDO QUISER</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="logo">solvr</div>
+    <div class="foot-links">
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#mercados">Mercados</a>
+      <a href="#diferencial">Diferencial</a>
+    </div>
+    <div class="copy">© 2026 SOLVR — MARKETPLACE GLOBAL DE SOLUÇÕES</div>
+  </div>
+</footer>
+
+<script>
+  // Build ticker with duplicated content for seamless loop
+  const tickets = [
+    {tag:'SAAS', title:'Reduzir CAC em 20% sem aumentar budget', val:'R$ 4.500', status:'ABERTO'},
+    {tag:'IA', title:'Automatizar triagem de currículos', val:'R$ 3.200', status:'12 PROPOSTAS'},
+    {tag:'DESIGN', title:'Redesenhar onboarding mobile', val:'R$ 2.800', status:'RESOLVIDO'},
+    {tag:'MARKETING', title:'Estratégia de lançamento B2B', val:'R$ 6.000', status:'ABERTO'},
+    {tag:'ENGENHARIA', title:'Otimizar consumo de API em 40%', val:'R$ 3.900', status:'8 PROPOSTAS'},
+    {tag:'GROWTH', title:'Destravar funil de conversão', val:'R$ 5.100', status:'ABERTO'},
+    {tag:'PRODUTO', title:'Prototipar novo fluxo de checkout', val:'R$ 4.200', status:'6 PROPOSTAS'},
+    {tag:'DADOS', title:'Modelo de previsão de churn', val:'R$ 7.300', status:'ABERTO'},
+  ];
+  const track = document.getElementById('tickerTrack');
+  function renderTickets(list){
+    return list.map(t => `
+      <div class="ticket">
+        <span class="tag">${t.tag}</span>
+        <span class="title">${t.title}</span>
+        <span class="val">${t.val}</span>
+        <span class="status">${t.status}</span>
+      </div>`).join('');
+  }
+  track.innerHTML = renderTickets(tickets) + renderTickets(tickets);
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); } });
+  }, {threshold:0.15});
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Fake waitlist submit
+  const form = document.getElementById('waitlistForm');
+  const thanks = document.getElementById('thanksMsg');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    form.style.display = 'none';
+    thanks.style.display = 'block';
+  });
+</script>
+
+</body>
+</html>
